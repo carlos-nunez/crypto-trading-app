@@ -6,15 +6,17 @@ import {
   Dimensions,
   StyleSheet,
   ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
 import {Context as AlgoContext} from '../context/AlgoContext';
-import {ListItem, Avatar} from 'react-native-elements';
-const window = Dimensions.get('window');
+import {ListItem} from 'react-native-elements';
+import Trade from '../components/Trade';
 import {LineChart} from 'react-native-chart-kit';
 import {Appearance, useColorScheme} from 'react-native';
 import {light, dark} from '../styles/defaultStyles';
-
 import moment from 'moment';
+
+const window = Dimensions.get('window');
 const HomeScreen = () => {
   const {state, getTrades, getCapitalHistory} = useContext(AlgoContext);
   const {trades, capital_history} = state;
@@ -35,70 +37,9 @@ const HomeScreen = () => {
   }, []);
 
   const renderItem = ({item}) => {
-    var net_change =
-      item[1].sale_amount_minus_commission -
-      item[0].purchase_amount_minus_commission;
-
-    var isProfit = net_change > 0;
-
-    var profit_style = isProfit ? styles.green : styles.red;
-
-    const data = {
-      labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-      datasets: [
-        {
-          data: [20, 45, 28, 80, 99, 43],
-          color: (opacity = 1) => `rgba(134, 65, 244, ${opacity})`, // optional
-          strokeWidth: 2, // optional
-        },
-      ],
-      legend: ['Rainy Days'], // optional
-    };
-
     return (
       <>
-        <Text style={[styles.time, {color: theme.textColor}]}>
-          {moment(item[0].transaction_time).format('hh:mm:ss a - LL')}
-        </Text>
-        <ListItem
-          containerStyle={[
-            styles.listItem,
-            {backgroundColor: theme.foregroundColor},
-          ]}
-          key={0}>
-          <ListItem.Content>
-            <ListItem.Title style={{color: theme.textColor2}}>
-              {item[0].asset} @ ${item[0].average_price_of_asset}
-            </ListItem.Title>
-            <ListItem.Subtitle style={{color: theme.textColor}}>
-              Allocated: ${item[0].purchase_amount_minus_commission}
-            </ListItem.Subtitle>
-          </ListItem.Content>
-          <ListItem.Title style={{color: theme.textColor2}}>
-            {item[0].side}
-          </ListItem.Title>
-        </ListItem>
-
-        <Text style={[styles.time, {color: theme.textColor}]}>
-          {moment(item[1].transaction_time).format('hh:mm:ss a - LL')}
-        </Text>
-        <ListItem
-          containerStyle={[
-            styles.listItem,
-            {backgroundColor: theme.foregroundColor},
-          ]}
-          key={0}>
-          <ListItem.Content>
-            <ListItem.Title style={{color: theme.textColor2}}>
-              {item[1].asset} @ ${item[1].average_price_of_asset}
-            </ListItem.Title>
-            <ListItem.Subtitle style={profit_style}>
-              Sold for: ${item[1].sale_amount_minus_commission} P/L:{' '}
-              {isProfit ? '+' : '-'}${net_change}
-            </ListItem.Subtitle>
-          </ListItem.Content>
-          <ListItem.Title style={profit_style}>{item[1].side}</ListItem.Title>
-        </ListItem>
+        <Trade order={item} />
       </>
     );
   };
@@ -123,8 +64,16 @@ const HomeScreen = () => {
     );
   }
 
+  var plStyle =
+    capital_history[capital_history.length - 1].capital -
+      capital_history[capital_history.length - 2].capital >
+    0
+      ? theme.green
+      : theme.red;
+
   return (
-    <View style={[styles.container, {backgroundColor: theme.foregroundColor}]}>
+    <SafeAreaView
+      style={[styles.container, {backgroundColor: theme.foregroundColor}]}>
       <FlatList
         onRefresh={async () => {
           setIsFetching(true);
@@ -134,8 +83,19 @@ const HomeScreen = () => {
         refreshing={isFetching}
         ListHeaderComponent={
           <>
-            <Text style={[styles.capital, {color: theme.textColor2}]}>
-              Current Balance: ${keys[keys.length - 1]}
+            <Text
+              style={[
+                styles.capital,
+                {color: theme.textColor2, marginTop: 25},
+              ]}>
+              Investing
+            </Text>
+            <Text
+              style={[
+                styles.capital,
+                {color: theme.textColor2, marginBottom: 30},
+              ]}>
+              ${keys[keys.length - 1].toFixed(2)}
             </Text>
             <LineChart
               data={{
@@ -143,18 +103,19 @@ const HomeScreen = () => {
                 datasets: [
                   {
                     data: keys,
-                    color: (opacity = 1) => theme.green, // optional
-                    stroke: 1,
+                    color: (opacity = 1) => plStyle, // optional
+                    strokeWidth: 2,
                   },
                 ],
               }}
               width={Dimensions.get('window').width} // from react-native
-              height={220}
+              height={230}
+              withInnerLines={false}
               yAxisLabel="$"
               yAxisSuffix=""
               yAxisInterval={1} // optional, defaults to 1
               chartConfig={{
-                backgroundColor: 'green',
+                backgroundColor: theme.foregroundColor,
                 backgroundGradientFrom: theme.foregroundColor,
                 backgroundGradientTo: theme.foregroundColor,
                 decimalPlaces: 2, // optional, defaults to 2dp
@@ -167,12 +128,13 @@ const HomeScreen = () => {
                     ? `rgba(255,255,255, ${opacity})`
                     : `rgba(0,0,0, ${opacity})`,
                 style: {
-                  borderRadius: 16,
+                  borderRadius: 0,
                 },
+                fillShadowGradient: plStyle,
                 propsForDots: {
-                  r: '6',
-                  strokeWidth: '2',
-                  stroke: '',
+                  r: '4',
+                  strokeWidth: '1',
+                  stroke: '1',
                 },
               }}
               bezier
@@ -187,7 +149,7 @@ const HomeScreen = () => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -198,27 +160,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   capital: {
-    paddingTop: 15,
-    fontSize: 20,
-    textAlign: 'center',
-    color: 'white',
-    fontWeight: '600',
-  },
-  listItem: {
-    width: window.width,
-    paddingTop: 10,
-    paddingBottom: 10,
-  },
-  red: {
-    color: 'red',
-  },
-  green: {
-    color: 'green',
-  },
-  time: {
-    fontWeight: '600',
-    paddingTop: 10,
+    paddingTop: 0,
+    fontSize: 32,
     paddingLeft: 15,
+    color: 'white',
+    fontWeight: '400',
   },
 });
 

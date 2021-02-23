@@ -11,14 +11,15 @@ import {Appearance, useColorScheme} from 'react-native';
 const Stack = createStackNavigator();
 
 function App() {
-  const colorScheme = useColorScheme();
+  const theme = useColorScheme() == 'light' ? light : dark;
 
-  var theme = colorScheme == 'light' ? light : dark;
   return (
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
           options={{
+            headerTransparent: true,
+            headerTitle: '',
             headerTitleStyle: {color: theme.backgroundColor},
             headerStyle: {
               backgroundColor: theme.green,
