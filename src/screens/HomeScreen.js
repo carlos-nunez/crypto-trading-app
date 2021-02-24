@@ -15,8 +15,42 @@ import {LineChart} from 'react-native-chart-kit';
 import {Appearance, useColorScheme} from 'react-native';
 import {light, dark} from '../styles/defaultStyles';
 import moment from 'moment';
+import {
+  Chart,
+  Line,
+  Area,
+  HorizontalAxis,
+  VerticalAxis,
+  Tooltip,
+} from 'react-native-responsive-linechart';
 
 const window = Dimensions.get('window');
+
+const LineInfo = ({value, position}) => {
+  const colorScheme = useColorScheme();
+
+  var theme = colorScheme == 'light' ? light : dark;
+  return (
+    <>
+      <View style={{position: 'absolute', left: position.x, width: 300}}>
+        <Text style={{color: theme.textColor}}>
+          {moment.unix(value.x).format('LL')}
+        </Text>
+      </View>
+      <View
+        style={{
+          width: 2,
+          height: 100,
+          backgroundColor: 'rgba(255,255,255, .3)',
+          position: 'absolute',
+          left: position.x,
+          top: position.y - 50,
+        }}
+      />
+    </>
+  );
+};
+
 const HomeScreen = () => {
   const {state, getTrades, getCapitalHistory} = useContext(AlgoContext);
   const {trades, capital_history} = state;
@@ -24,7 +58,6 @@ const HomeScreen = () => {
   const colorScheme = useColorScheme();
 
   var theme = colorScheme == 'light' ? light : dark;
-  console.log(theme);
 
   const fetchHelper = async () => {
     await getTrades();
@@ -44,16 +77,51 @@ const HomeScreen = () => {
     );
   };
 
-  console.log('TRADES ------------', trades);
-  console.log('CAPITALS ----------', capital_history);
-
   var labels = capital_history.map((cap) => {
-    return moment(cap.utc_time).format('MM/DD');
+    if (Number(moment(cap.utc_time).format('DD')) % 2 == 0)
+      return moment(cap.utc_time).format('MM/DD');
+
+    return '';
   });
 
   var keys = capital_history.map((cap) => {
     return cap.capital;
   });
+
+  var data2 = capital_history.map((cap) => {
+    return {x: moment(cap.utc_time).unix(), y: cap.capital};
+  });
+
+  var DAT = [];
+
+  for (var i = 0; i < 30; i++) {
+    DAT.push({x: 100 + i, y: i + 300 + Math.random() * 10});
+  }
+
+  var getMaxMin = (data) => {
+    var maxX = 0,
+      maxY = 0;
+
+    var minX = data[0].x,
+      minY = data[0].y;
+
+    data.forEach((item, i) => {
+      if (item.x > maxX) maxX = item.x;
+      if (item.y > maxY) maxY = item.y;
+      if (item.x < minX) minX = item.x;
+      if (item.y < minY) minY = item.y;
+    });
+
+    return {maxX, maxY, minY, minX};
+  };
+
+  DAT = data2;
+
+  const [balance, setBalance] = useState(0);
+
+  useEffect(() => {
+    isFetching == false ? setBalance(keys[keys.length - 1].toFixed(2)) : null;
+  }, [isFetching]);
 
   if (isFetching && keys.length == 0) {
     return (
@@ -74,6 +142,14 @@ const HomeScreen = () => {
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: theme.foregroundColor}]}>
+      <Text style={[styles.capital, {color: theme.textColor2, marginTop: 25}]}>
+        Investing
+      </Text>
+      <Text
+        style={[styles.capital, {color: theme.textColor2, marginBottom: 30}]}>
+        ${balance}
+      </Text>
+
       <FlatList
         onRefresh={async () => {
           setIsFetching(true);
@@ -83,66 +159,72 @@ const HomeScreen = () => {
         refreshing={isFetching}
         ListHeaderComponent={
           <>
-            <Text
-              style={[
-                styles.capital,
-                {color: theme.textColor2, marginTop: 25},
-              ]}>
-              Investing
-            </Text>
-            <Text
-              style={[
-                styles.capital,
-                {color: theme.textColor2, marginBottom: 30},
-              ]}>
-              ${keys[keys.length - 1].toFixed(2)}
-            </Text>
-            <LineChart
-              data={{
-                labels: labels,
-                datasets: [
-                  {
-                    data: keys,
-                    color: (opacity = 1) => plStyle, // optional
-                    strokeWidth: 2,
+            <Chart
+              style={{height: 230, width: '100%', marginTop: 1}}
+              data={DAT}
+              padding={{left: 0, bottom: 20, right: 2, top: 0}}
+              xDomain={{
+                min: getMaxMin(DAT).minX,
+                max: getMaxMin(DAT).maxX + 20,
+              }}
+              yDomain={{
+                min: getMaxMin(DAT).minY - 3,
+                max: getMaxMin(DAT).maxY + 3,
+              }}>
+              <VerticalAxis
+                tickCount={10}
+                theme={{
+                  grid: {visible: false},
+                  axis: {visible: false, stroke: {color: '#aaa', width: 2}},
+                  ticks: {visible: false, stroke: {color: '#aaa', width: 2}},
+                  labels: {
+                    visible: false,
+                    formatter: (v: number) => v.toFixed(2),
                   },
-                ],
-              }}
-              width={Dimensions.get('window').width} // from react-native
-              height={230}
-              withInnerLines={false}
-              yAxisLabel="$"
-              yAxisSuffix=""
-              yAxisInterval={1} // optional, defaults to 1
-              chartConfig={{
-                backgroundColor: theme.foregroundColor,
-                backgroundGradientFrom: theme.foregroundColor,
-                backgroundGradientTo: theme.foregroundColor,
-                decimalPlaces: 2, // optional, defaults to 2dp
-                color: (opacity = 1) =>
-                  colorScheme == 'dark'
-                    ? `rgba(255,255,255, ${opacity})`
-                    : `rgba(0,0,0, ${opacity})`,
-                labelColor: (opacity = 1) =>
-                  colorScheme == 'dark'
-                    ? `rgba(255,255,255, ${opacity})`
-                    : `rgba(0,0,0, ${opacity})`,
-                style: {
-                  borderRadius: 0,
-                },
-                fillShadowGradient: plStyle,
-                propsForDots: {
-                  r: '4',
-                  strokeWidth: '1',
-                  stroke: '1',
-                },
-              }}
-              bezier
-              style={{
-                marginVertical: 0,
-                borderRadius: 0,
-              }}
-            />
+                }}
+              />
+              <HorizontalAxis
+                tickCount={9}
+                theme={{
+                  grid: {visible: false},
+                  axis: {visible: false, stroke: {color: '#aaa', width: 2}},
+                  ticks: {visible: false, stroke: {color: '#aaa', width: 2}},
+                  labels: {
+                    visible: false,
+                    label: {rotation: 0},
+                    formatter: Math.round,
+                  },
+                }}
+              />
+              <Area
+                smoothing={'cubic-spline'}
+                theme={{
+                  gradient: {
+                    from: {
+                      color: theme.foregroundColor,
+                      opacity: 0.6,
+                    },
+                    to: {
+                      color: theme.foregroundColor,
+                      opacity: 0.05,
+                    },
+                  },
+                }}
+              />
+              <Line
+                hideTooltipOnDragEnd={true}
+                onTooltipSelectEnd={() => {
+                  setBalance([keys[keys.length - 1].toFixed(2)]);
+                }}
+                onTooltipSelect={({x, y}) => {
+                  console.log(x, y);
+                  setBalance(y.toFixed(2));
+                }}
+                smoothing={'cubic-spline'}
+                theme={{stroke: {color: plStyle, width: 1.5}}}
+                tooltipComponent={<LineInfo />}
+              />
+            </Chart>
           </>
         }
         data={trades}
@@ -156,8 +238,6 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   capital: {
     paddingTop: 0,

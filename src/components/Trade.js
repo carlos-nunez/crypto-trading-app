@@ -28,21 +28,18 @@ const Trade = ({order}) => {
     <>
       {/**Buy Order Element **/}
       <Text style={[styles.time, {color: theme.textColor}]}>
-        {moment(buy_order.transaction_time).format('hh:mm:ss a - LL')}
+        {moment(buy_order.transaction_time).format('hh:mm a - LL')}
       </Text>
       <ListItem
         containerStyle={[
           styles.listItem,
           {backgroundColor: theme.foregroundColor},
         ]}
-        key={0}>
+        key={`${net_change}aa`}>
         <ListItem.Content>
           <ListItem.Title style={{color: theme.textColor2}}>
             {buy_order.asset} @ ${buy_order.average_price_of_asset}
           </ListItem.Title>
-          <ListItem.Subtitle style={{color: theme.textColor}}>
-            Allocated: ${buy_order.purchase_amount_minus_commission}
-          </ListItem.Subtitle>
         </ListItem.Content>
         <ListItem.Title style={{color: theme.textColor2, paddingRight: 10}}>
           {buy_order.side} ${buy_order.purchase_amount_minus_commission}
@@ -51,7 +48,7 @@ const Trade = ({order}) => {
 
       {/**Sell Order Element **/}
       <Text style={[styles.time, {color: theme.textColor}]}>
-        {moment(sell_order.transaction_time).format('hh:mm:ss a - LL')}
+        {moment(sell_order.transaction_time).format('hh:mm a')}
       </Text>
       <ListItem
         containerStyle={[
@@ -64,11 +61,16 @@ const Trade = ({order}) => {
             {sell_order.asset} @ ${sell_order.average_price_of_asset}
           </ListItem.Title>
           <ListItem.Subtitle style={{color: profit_style}}>
-            P/L: {isProfit ? '+' : '-'}${net_change} {isProfit ? '▲' : '▼'}
-            {percent_change.toFixed(0)}%
+            P/L: {isProfit ? '▲' : '▼'}${net_change} (
+            {percent_change.toFixed(0)}
+            %)
           </ListItem.Subtitle>
         </ListItem.Content>
-        <ListItem.Title style={[{backgroundColor: profit_style}, styles.sell]}>
+        <ListItem.Title
+          style={[
+            {backgroundColor: profit_style, color: theme.foregroundColor},
+            styles.sell,
+          ]}>
           {sell_order.side} ${sell_order.sale_amount_minus_commission}
         </ListItem.Title>
       </ListItem>

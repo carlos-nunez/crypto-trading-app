@@ -1,5 +1,6 @@
 import createDataContext from './createDataContext';
 import algo_api from '../api/algo';
+import moment from 'moment';
 
 const algoReducer = (state, action) => {
   switch (action.type) {
@@ -14,16 +15,42 @@ const algoReducer = (state, action) => {
 
 const getTrades = (dispatch) => {
   return async () => {
-    const response = await algo_api.get(`/trades`);
+    try {
+      const response = await algo_api.get(`/trades`);
 
-    dispatch({type: 'get_trades', payload: response.data});
+      dispatch({type: 'get_trades', payload: response.data});
+    } catch (e) {
+      var trade = {
+        asset: 'ETH',
+        average_price_of_asset: 1700,
+        purchase_amount_minus_commission: 20,
+        side: buy,
+      };
+
+      dispatch({type: 'get_trades', payload: []});
+    }
   };
 };
 
 const getCapitalHistory = (dispatch) => {
   return async () => {
-    const response = await algo_api.get(`/capital`);
-    dispatch({type: 'get_capital_history', payload: response.data});
+    try {
+      const response = await algo_api.get(`/capital`);
+      dispatch({type: 'get_capital_history', payload: response.data});
+    } catch (e) {
+      var capitals = [];
+
+      for (var i = 0; i < 20; i++) {
+        var capital = {
+          id: `${i}`,
+          capital: i + Math.random() * 10,
+          utc_time: moment().add(i, 'days'),
+        };
+        capitals.push(capital);
+      }
+
+      dispatch({type: 'get_capital_history', payload: capitals});
+    }
   };
 };
 
