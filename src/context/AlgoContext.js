@@ -40,11 +40,11 @@ const getCapitalHistory = (dispatch) => {
     } catch (e) {
       var capitals = [];
 
-      for (var i = 0; i < 20; i++) {
+      for (var i = 0; i < 50; i++) {
         var capital = {
           id: `${i}`,
           capital: i + Math.random() * 10,
-          utc_time: moment().add(i, 'days'),
+          utc_time: moment().subtract(i, 'days'),
         };
         capitals.push(capital);
       }

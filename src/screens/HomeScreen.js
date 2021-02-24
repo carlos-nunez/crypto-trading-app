@@ -7,13 +7,10 @@ import {
   StyleSheet,
   ActivityIndicator,
   SafeAreaView,
+  Appearance,
+  useColorScheme,
 } from 'react-native';
-import {Context as AlgoContext} from '../context/AlgoContext';
 import {ListItem} from 'react-native-elements';
-import Trade from '../components/Trade';
-import {LineChart} from 'react-native-chart-kit';
-import {Appearance, useColorScheme} from 'react-native';
-import {light, dark} from '../styles/defaultStyles';
 import moment from 'moment';
 import {
   Chart,
@@ -24,85 +21,44 @@ import {
   Tooltip,
 } from 'react-native-responsive-linechart';
 
+import Trade from '../components/Trade';
+import TimePicker from '../components/TimePicker';
+import ChartLine from '../components/ChartLine';
+import {light, dark} from '../styles/defaultStyles';
+import {Context as AlgoContext} from '../context/AlgoContext';
 const window = Dimensions.get('window');
 
-const LineInfo = ({value, position}) => {
-  const colorScheme = useColorScheme();
-
-  var theme = colorScheme == 'light' ? light : dark;
-  return (
-    <>
-      <View style={{position: 'absolute', left: position.x, width: 300}}>
-        <Text style={{color: theme.textColor}}>
-          {moment.unix(value.x).format('LL')}
-        </Text>
-      </View>
-      <View
-        style={{
-          width: 2,
-          height: 100,
-          backgroundColor: 'rgba(255,255,255, .3)',
-          position: 'absolute',
-          left: position.x,
-          top: position.y - 50,
-        }}
-      />
-    </>
-  );
-};
-
 const HomeScreen = () => {
+  /** Global State **/
   const {state, getTrades, getCapitalHistory} = useContext(AlgoContext);
   const {trades, capital_history} = state;
-  const [isFetching, setIsFetching] = useState(true);
-  const colorScheme = useColorScheme();
 
+  /**Local State**/
+  const [isFetching, setIsFetching] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [balance, setBalance] = useState(0);
+  const [time, setTime] = useState('1D');
+
+  /**Dark/Light Theme Hook**/
+  const colorScheme = useColorScheme();
   var theme = colorScheme == 'light' ? light : dark;
 
+  /** Helper Functions **/
   const fetchHelper = async () => {
     await getTrades();
     await getCapitalHistory();
     setIsFetching(false);
   };
 
-  useEffect(() => {
-    fetchHelper();
-  }, []);
-
-  const renderItem = ({item}) => {
-    return (
-      <>
-        <Trade order={item} />
-      </>
-    );
-  };
-
-  var labels = capital_history.map((cap) => {
-    if (Number(moment(cap.utc_time).format('DD')) % 2 == 0)
-      return moment(cap.utc_time).format('MM/DD');
-
-    return '';
-  });
-
-  var keys = capital_history.map((cap) => {
-    return cap.capital;
-  });
-
-  var data2 = capital_history.map((cap) => {
-    return {x: moment(cap.utc_time).unix(), y: cap.capital};
-  });
-
-  var DAT = [];
-
-  for (var i = 0; i < 30; i++) {
-    DAT.push({x: 100 + i, y: i + 300 + Math.random() * 10});
-  }
-
+  /**
+  Gets the max/min y and x values of an array
+  @param data array of {x, y} values
+  @returns {maxX, maxY, minX, minY}
+  **/
   var getMaxMin = (data) => {
     var maxX = 0,
-      maxY = 0;
-
-    var minX = data[0].x,
+      maxY = 0,
+      minX = data[0].x,
       minY = data[0].y;
 
     data.forEach((item, i) => {
@@ -115,52 +71,104 @@ const HomeScreen = () => {
     return {maxX, maxY, minY, minX};
   };
 
-  DAT = data2;
+  console.log(capital_history);
 
-  const [balance, setBalance] = useState(0);
-
-  useEffect(() => {
-    isFetching == false ? setBalance(keys[keys.length - 1].toFixed(2)) : null;
-  }, [isFetching]);
-
-  if (isFetching && keys.length == 0) {
+  /**
+  Renders the trade item
+  @param order tuple of [buy, sell] orders
+  @returns Trade element
+  **/
+  const renderItem = ({item}) => {
     return (
       <View
-        style={[styles.container, {backgroundColor: theme.foregroundColor}]}>
+        style={{
+          backgroundColor: theme.backgroundColor,
+          paddingTop: 1,
+          paddingBottom: 1,
+          marginBottom: 0,
+        }}>
+        <Trade order={item} />
+      </View>
+    );
+  };
+
+  /**Side Effects**/
+
+  /**Initial Data Fetch**/
+  useEffect(() => {
+    fetchHelper();
+  }, []);
+
+  /**Update the Balance After isFetching is Finished**/
+  useEffect(() => {
+    isFetching == false
+      ? setBalance(
+          capital_history[capital_history.length - 1].capital.toFixed(2),
+        )
+      : null;
+  }, [isFetching]);
+
+  /**Data Organization**/
+  var data2 = capital_history.map((cap) => {
+    return {x: moment(cap.utc_time).unix(), y: cap.capital};
+  });
+
+  /**Variables**/
+  var DAT = [];
+  DAT = data2;
+
+  /**Loading**/
+  if (isFetching) {
+    return (
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: theme.foregroundColor,
+            justifyContent: 'center',
+            alignItems: 'center',
+          },
+        ]}>
         <ActivityIndicator />
       </View>
     );
   }
 
-  var plStyle =
-    capital_history[capital_history.length - 1].capital -
-      capital_history[capital_history.length - 2].capital >
-    0
+  var plStyle = capital_history
+    ? capital_history[0].capital - capital_history[1].capital > 0
       ? theme.green
-      : theme.red;
+      : theme.red
+    : theme.green;
 
+  /**Done Loading**/
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: theme.foregroundColor}]}>
-      <Text style={[styles.capital, {color: theme.textColor2, marginTop: 25}]}>
-        Investing
-      </Text>
-      <Text
-        style={[styles.capital, {color: theme.textColor2, marginBottom: 30}]}>
-        ${balance}
-      </Text>
-
       <FlatList
         onRefresh={async () => {
-          setIsFetching(true);
+          setRefreshing(true);
           await fetchHelper();
-          setIsFetching(false);
+          setRefreshing(false);
         }}
-        refreshing={isFetching}
+        refreshing={refreshing}
         ListHeaderComponent={
           <>
+            <Text
+              style={[
+                styles.capital,
+                {color: theme.textColor2, marginTop: 25},
+              ]}>
+              Capital
+            </Text>
+            <Text
+              style={[
+                styles.capital,
+                {color: theme.textColor2, marginBottom: 30},
+              ]}>
+              ${balance}
+            </Text>
             <Chart
-              style={{height: 230, width: '100%', marginTop: 1}}
+              style={{height: 175, width: '100%', marginTop: 1}}
               data={DAT}
               padding={{left: 0, bottom: 20, right: 2, top: 0}}
               xDomain={{
@@ -214,7 +222,11 @@ const HomeScreen = () => {
               <Line
                 hideTooltipOnDragEnd={true}
                 onTooltipSelectEnd={() => {
-                  setBalance([keys[keys.length - 1].toFixed(2)]);
+                  setBalance([
+                    capital_history[capital_history.length - 1].capital.toFixed(
+                      2,
+                    ),
+                  ]);
                 }}
                 onTooltipSelect={({x, y}) => {
                   console.log(x, y);
@@ -222,9 +234,10 @@ const HomeScreen = () => {
                 }}
                 smoothing={'cubic-spline'}
                 theme={{stroke: {color: plStyle, width: 1.5}}}
-                tooltipComponent={<LineInfo />}
+                tooltipComponent={<ChartLine />}
               />
             </Chart>
+            <TimePicker time={time} setTime={setTime} plStyle={plStyle} />
           </>
         }
         data={trades}
@@ -241,10 +254,10 @@ const styles = StyleSheet.create({
   },
   capital: {
     paddingTop: 0,
-    fontSize: 32,
+    fontSize: 34,
     paddingLeft: 15,
     color: 'white',
-    fontWeight: '400',
+    fontWeight: '500',
   },
 });
 
