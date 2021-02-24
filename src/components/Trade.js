@@ -33,7 +33,7 @@ const Trade = ({order}) => {
           </ListItem.Title>
         </ListItem.Content>
         <ListItem.Title style={{color: theme.textColor2, paddingRight: 10}}>
-          {buy_order.side} $
+          {sell_order == null ? 'OPEN' : buy_order.side} $
           {buy_order.purchase_amount_minus_commission.toFixed(2)}
         </ListItem.Title>
       </ListItem>

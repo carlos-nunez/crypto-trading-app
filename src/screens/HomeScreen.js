@@ -71,8 +71,6 @@ const HomeScreen = () => {
     return {maxX, maxY, minY, minX};
   };
 
-  console.log(capital_history);
-
   /**
   Renders the trade item
   @param order tuple of [buy, sell] orders
@@ -83,7 +81,7 @@ const HomeScreen = () => {
       <View
         style={{
           backgroundColor: theme.backgroundColor,
-          paddingTop: 1,
+          paddingTop: 0,
           paddingBottom: 1,
           marginBottom: 0,
         }}>
@@ -109,8 +107,8 @@ const HomeScreen = () => {
   }, [isFetching]);
 
   /**Data Organization**/
-  var data2 = capital_history.map((cap) => {
-    return {x: moment(cap.utc_time).unix(), y: cap.capital};
+  var data2 = capital_history.map((cap, i) => {
+    return {x: i, y: cap.capital, z: moment(cap.utc_time).unix()};
   });
 
   /**Variables**/
@@ -170,14 +168,14 @@ const HomeScreen = () => {
             <Chart
               style={{height: 175, width: '100%', marginTop: 1}}
               data={DAT}
-              padding={{left: 0, bottom: 20, right: 2, top: 0}}
+              padding={{left: 0, bottom: 20, right: 0, top: 0}}
               xDomain={{
                 min: getMaxMin(DAT).minX,
-                max: getMaxMin(DAT).maxX + 20,
+                max: getMaxMin(DAT).maxX,
               }}
               yDomain={{
-                min: getMaxMin(DAT).minY - 3,
-                max: getMaxMin(DAT).maxY + 3,
+                min: getMaxMin(DAT).minY,
+                max: getMaxMin(DAT).maxY,
               }}>
               <VerticalAxis
                 tickCount={10}
@@ -220,6 +218,7 @@ const HomeScreen = () => {
                 }}
               />
               <Line
+                hideTooltipAfter={100}
                 hideTooltipOnDragEnd={true}
                 onTooltipSelectEnd={() => {
                   setBalance([
@@ -240,7 +239,7 @@ const HomeScreen = () => {
             <TimePicker time={time} setTime={setTime} plStyle={plStyle} />
           </>
         }
-        data={trades}
+        data={[...trades].reverse()}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
       />

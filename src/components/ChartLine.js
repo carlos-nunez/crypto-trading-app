@@ -9,20 +9,16 @@ const ChartLine = ({value, position}) => {
   const colorScheme = useColorScheme();
   var theme = colorScheme == 'light' ? light : dark;
   var leftOffset = position.x;
-
-  if (position.x > window.width - 135) {
-    leftOffset = position.x - 70;
-  }
-
-  if (position.x > window.width - 60) {
-    leftOffset = position.x - window.width * 0.3;
+  console.log(value);
+  if (position.x > window.width - 190) {
+    leftOffset = window.width - 190;
   }
 
   return (
     <>
       <View style={{position: 'absolute', left: leftOffset, width: 300}}>
         <Text style={{color: theme.textColor}}>
-          {moment.unix(value.x).format('LL')}
+          {moment.unix(value.z).format('LL hh:mm a')}
         </Text>
       </View>
       <View
