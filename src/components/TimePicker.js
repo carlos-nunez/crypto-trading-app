@@ -11,14 +11,21 @@ import {Appearance, useColorScheme} from 'react-native';
 import {light, dark} from '../styles/defaultStyles';
 import moment from 'moment';
 
+/**
+Sorts the Homescreen Chart and List by time
+@param setTime()
+@param time
+@param plStyle
+
+
+**/
 const TimePicker = ({setTime, time, plStyle}) => {
   const colorScheme = useColorScheme();
 
-  var theme = colorScheme == 'light' ? light : dark;
+  let theme = colorScheme == 'light' ? light : dark;
+  let options = ['1D', '1W', '1M', '1Y', 'All'];
 
-  var options = ['1D', '1W', '1M', '1Y', 'All'];
-
-  var eles = options.map((el) => (
+  let eles = options.map((el) => (
     <TouchableOpacity
       style={{borderRadius: 10}}
       onPress={() => {

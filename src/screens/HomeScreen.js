@@ -26,6 +26,7 @@ import TimePicker from '../components/TimePicker';
 import ChartLine from '../components/ChartLine';
 import {light, dark} from '../styles/defaultStyles';
 import {Context as AlgoContext} from '../context/AlgoContext';
+import getMaxMin from '../utils/chart_funcs';
 const window = Dimensions.get('window');
 
 const HomeScreen = () => {
@@ -41,34 +42,13 @@ const HomeScreen = () => {
 
   /**Dark/Light Theme Hook**/
   const colorScheme = useColorScheme();
-  var theme = colorScheme == 'light' ? light : dark;
+  let theme = colorScheme == 'light' ? light : dark;
 
   /** Helper Functions **/
   const fetchHelper = async () => {
     await getTrades();
     await getCapitalHistory();
     setIsFetching(false);
-  };
-
-  /**
-  Gets the max/min y and x values of an array
-  @param data array of {x, y} values
-  @returns {maxX, maxY, minX, minY}
-  **/
-  var getMaxMin = (data) => {
-    var maxX = 0,
-      maxY = 0,
-      minX = data[0].x,
-      minY = data[0].y;
-
-    data.forEach((item, i) => {
-      if (item.x > maxX) maxX = item.x;
-      if (item.y > maxY) maxY = item.y;
-      if (item.x < minX) minX = item.x;
-      if (item.y < minY) minY = item.y;
-    });
-
-    return {maxX, maxY, minY, minX};
   };
 
   /**
@@ -107,13 +87,18 @@ const HomeScreen = () => {
   }, [isFetching]);
 
   /**Data Organization**/
-  var data2 = capital_history.map((cap, i) => {
+  let data2 = capital_history.map((cap, i) => {
     return {x: i, y: cap.capital, z: moment(cap.utc_time).unix()};
   });
 
   /**Variables**/
-  var DAT = [];
+  let DAT = [];
   DAT = data2;
+
+  var plStyle =
+    capital_history[0]?.capital - capital_history[1]?.capital > 0
+      ? theme.green
+      : theme.red;
 
   /**Loading**/
   if (isFetching) {
@@ -131,12 +116,6 @@ const HomeScreen = () => {
       </View>
     );
   }
-
-  var plStyle = capital_history
-    ? capital_history[0].capital - capital_history[1].capital > 0
-      ? theme.green
-      : theme.red
-    : theme.green;
 
   /**Done Loading**/
   return (

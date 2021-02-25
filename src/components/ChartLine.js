@@ -5,11 +5,16 @@ import {light, dark} from '../styles/defaultStyles';
 import moment from 'moment';
 const window = Dimensions.get('window');
 
+/**
+Plots the Chart Line and Text on Tooltip touch
+@param value {x,y,z}
+@param position {x,y}
+**/
 const ChartLine = ({value, position}) => {
   const colorScheme = useColorScheme();
-  var theme = colorScheme == 'light' ? light : dark;
-  var leftOffset = position.x;
-  console.log(value);
+  let theme = colorScheme == 'light' ? light : dark;
+  let leftOffset = position.x;
+
   if (position.x > window.width - 190) {
     leftOffset = window.width - 190;
   }
