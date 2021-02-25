@@ -1,9 +1,10 @@
-import {ListItem, Avatar} from 'react-native-elements';
-import React, {useState, useContext, useEffect} from 'react';
+import {ListItem} from 'react-native-elements';
+import React from 'react';
 import {Dimensions, StyleSheet, Text, View} from 'react-native';
-import {Appearance, useColorScheme} from 'react-native';
+import {useColorScheme} from 'react-native';
 import {light, dark} from '../styles/defaultStyles';
 import moment from 'moment';
+const window = Dimensions.get('window');
 
 /**
 Trade component for an order
@@ -13,10 +14,28 @@ Trade component for an order
   (optional) {asset, utc_transaction_time, sale_amount_minus_commission, average_price_of_asset, side}
 ]
 **/
-const Trade = ({order}) => {
+
+type BuyOrder = {
+  asset: string;
+  utc_transaction_time: Date;
+  purchase_amount_minus_commission: number;
+  average_price_of_asset: number;
+  side: string;
+};
+
+type SellOrder = {
+  asset: string;
+  utc_transaction_time: Date;
+  sale_amount_minus_commission: number;
+  average_price_of_asset: number;
+  side: string;
+};
+
+const Trade = ({order}: any) => {
   let theme = useColorScheme() == 'light' ? light : dark;
-  let buy_order = order[0];
-  let sell_order = order[1] ? order[1] : null;
+  let buy_order: BuyOrder = order[0];
+  let sell_order: SellOrder = order[1] ? order[1] : null;
+  let net_change = 0;
 
   let buy_element = (
     <>
@@ -57,7 +76,7 @@ const Trade = ({order}) => {
 
   /** Profit Calculations **/
 
-  let net_change =
+  net_change =
     sell_order.sale_amount_minus_commission -
     buy_order.purchase_amount_minus_commission;
 

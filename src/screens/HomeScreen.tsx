@@ -7,10 +7,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   SafeAreaView,
-  Appearance,
   useColorScheme,
 } from 'react-native';
-import {ListItem} from 'react-native-elements';
 import moment from 'moment';
 import {
   Chart,
@@ -18,7 +16,6 @@ import {
   Area,
   HorizontalAxis,
   VerticalAxis,
-  Tooltip,
 } from 'react-native-responsive-linechart';
 
 import Trade from '../components/Trade';
@@ -26,10 +23,10 @@ import TimePicker from '../components/TimePicker';
 import ChartLine from '../components/ChartLine';
 import {light, dark} from '../styles/defaultStyles';
 import {Context as AlgoContext} from '../context/AlgoContext';
-import getMaxMin from '../utils/chart_funcs';
+import {getMaxMin} from '../utils/chart_funcs';
 const window = Dimensions.get('window');
 
-const HomeScreen = () => {
+const HomeScreen: React.FC<any> = () => {
   /** Global State **/
   const {state, getTrades, getCapitalHistory} = useContext(AlgoContext);
   const {trades, capital_history} = state;
@@ -56,7 +53,8 @@ const HomeScreen = () => {
   @param order tuple of [buy, sell] orders
   @returns Trade element
   **/
-  const renderItem = ({item}) => {
+
+  const renderItem = ({item}: any) => {
     return (
       <View
         style={{
@@ -86,8 +84,13 @@ const HomeScreen = () => {
       : null;
   }, [isFetching]);
 
+  type Capital = {
+    capital: number;
+    utc_time: Date;
+  };
+
   /**Data Organization**/
-  let data2 = capital_history.map((cap, i) => {
+  let data2 = capital_history.map((cap: Capital, i: number) => {
     return {x: i, y: cap.capital, z: moment(cap.utc_time).unix()};
   });
 
@@ -177,7 +180,7 @@ const HomeScreen = () => {
                   labels: {
                     visible: false,
                     label: {rotation: 0},
-                    formatter: Math.round,
+                    formatter: (v: number) => v.toFixed(2),
                   },
                 }}
               />
@@ -200,15 +203,15 @@ const HomeScreen = () => {
                 hideTooltipAfter={100}
                 hideTooltipOnDragEnd={true}
                 onTooltipSelectEnd={() => {
-                  setBalance([
-                    capital_history[capital_history.length - 1].capital.toFixed(
-                      2,
-                    ),
-                  ]);
+                  var newBal = capital_history[
+                    capital_history.length - 1
+                  ].capital.toFixed(2);
+
+                  setBalance(newBal);
                 }}
                 onTooltipSelect={({x, y}) => {
                   console.log(x, y);
-                  setBalance(y.toFixed(2));
+                  setBalance(Number(y.toFixed(2)));
                 }}
                 smoothing={'cubic-spline'}
                 theme={{stroke: {color: plStyle, width: 1.5}}}

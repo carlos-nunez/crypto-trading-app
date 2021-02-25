@@ -1,4 +1,17 @@
-export const light = {
+type Style = {
+  textColor: string;
+  textColor2: string;
+  foregroundColor: string;
+  backgroundColor: string;
+  green: string;
+  red: string;
+  yellow: string;
+  purple: string;
+  blue: string;
+  orange: string;
+};
+
+export const light: Style = {
   textColor2: '#1A3B34',
   textColor: '#899A96',
   foregroundColor: '#FFFFFF',
