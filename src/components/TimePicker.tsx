@@ -1,5 +1,4 @@
-import {ListItem, Avatar} from 'react-native-elements';
-import React, {useState, useContext, useEffect} from 'react';
+import React from 'react';
 import {
   Dimensions,
   StyleSheet,
@@ -7,9 +6,8 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
-import {Appearance, useColorScheme} from 'react-native';
+import {useColorScheme} from 'react-native';
 import {light, dark} from '../styles/defaultStyles';
-import moment from 'moment';
 
 /**
 Sorts the Homescreen Chart and List by time

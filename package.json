@@ -35,14 +35,20 @@
     "@babel/core": "^7.8.4",
     "@babel/runtime": "^7.8.4",
     "@react-native-community/eslint-config": "^1.1.0",
+    "@types/enzyme": "^3.10.8",
+    "@types/enzyme-adapter-react-16": "^1.0.6",
     "@types/jest": "^26.0.20",
     "@types/react": "^17.0.2",
     "@types/react-native": "^0.63.50",
     "@types/react-test-renderer": "^17.0.1",
     "babel-jest": "^25.1.0",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.6",
     "eslint": "^6.5.1",
     "jest": "^25.5.4",
+    "jest-fetch-mock": "^3.0.3",
     "metro-react-native-babel-preset": "^0.59.0",
+    "react-dom": "^17.0.1",
     "react-native-typescript-transformer": "^1.2.13",
     "react-test-renderer": "^16.13.1",
     "ts-jest": "^26.5.2",
@@ -55,9 +61,15 @@
   "jest": {
     "preset": "react-native",
     "transform": {
+      "^.+\\.js$": "<rootDir>/node_modules/react-native/jest/preprocessor.js",
       "^.+\\.tsx?$": "ts-jest"
     },
-    "testRegex": "(/src/.*\\.(test|spec))\\.(jsx?|tsx?)$",
+    "globals": {
+      "ts-jest": {
+        "tsConfigFile": "tsconfig.jest.json"
+      }
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "moduleFileExtensions": [
       "ts",
       "tsx",
@@ -65,6 +77,12 @@
       "jsx",
       "json",
       "node"
+    ],
+    "modulePaths": [
+      "<rootDir>"
+    ],
+    "setupFiles": [
+      "./tests/setup.js"
     ]
   }
 }

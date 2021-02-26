@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, Dimensions} from 'react-native';
-import {Appearance, useColorScheme} from 'react-native';
+import {useColorScheme} from 'react-native';
 import {light, dark} from '../styles/defaultStyles';
 import moment from 'moment';
 const window = Dimensions.get('window');
@@ -10,7 +10,7 @@ Plots the Chart Line and Text on Tooltip touch
 @param value {x,y,z}
 @param position {x,y}
 **/
-const ChartLine = ({value, position}) => {
+const ChartLine = ({value, position}: any) => {
   const colorScheme = useColorScheme();
   let theme = colorScheme == 'light' ? light : dark;
   let leftOffset = position.x;
