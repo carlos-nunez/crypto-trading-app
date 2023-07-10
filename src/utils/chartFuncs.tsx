@@ -1,4 +1,3 @@
-// @ts-ignore
 /**
 Gets the max/min y and x values of an array
 @param data array of {x, y} values
@@ -10,7 +9,7 @@ type Coord = {
   y: number;
 };
 
-export const getMaxMin: any = (data: Array<Coord>) => {
+export const getMaxMin = (data: Array<Coord>) => {
   let maxX = 0,
     maxY = 0,
     minX = data[0].x,
