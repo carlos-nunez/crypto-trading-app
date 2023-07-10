@@ -1,129 +1,67 @@
 import {ListItem} from 'react-native-elements';
 import React from 'react';
-import {Dimensions, StyleSheet, Text, View} from 'react-native';
-import {useColorScheme} from 'react-native';
+import {Dimensions, StyleSheet, Text, View, useColorScheme} from 'react-native';
 import {light, dark} from '../styles/defaultStyles';
 import moment from 'moment';
 const window = Dimensions.get('window');
+import {ITradeProps} from '../interfaces/AlgoInterfaces';
 
-/**
-Trade component for an order
+const Trade = ({order}: ITradeProps) => {
+  const theme = useColorScheme() == 'light' ? light : dark;
+  const buyOrder = order[0];
+  const sellOrder = order[1] ? order[1] : null;
+  const net_change = sellOrder ? sellOrder.sale_amount_minus_commission - buyOrder.purchase_amount_minus_commission : 0;
 
-@param order [
-  {asset, utc_transaction_time, purchase_amount_minus_commission, average_price_of_asset, side},
-  (optional) {asset, utc_transaction_time, sale_amount_minus_commission, average_price_of_asset, side}
-]
-**/
+  const isProfit = net_change > 0;
 
-type BuyOrder = {
-  asset: string;
-  utc_transaction_time: Date;
-  purchase_amount_minus_commission: number;
-  average_price_of_asset: number;
-  side: string;
-};
+  const percent_change = isProfit
+    ? (net_change / buyOrder.purchase_amount_minus_commission) * 100
+    : (net_change / buyOrder.purchase_amount_minus_commission) * 100;
 
-type SellOrder = {
-  asset: string;
-  utc_transaction_time: Date;
-  sale_amount_minus_commission: number;
-  average_price_of_asset: number;
-  side: string;
-};
-
-const Trade = ({order}: any) => {
-  let theme = useColorScheme() == 'light' ? light : dark;
-  let buy_order: BuyOrder = order[0];
-  let sell_order: SellOrder = order[1] ? order[1] : null;
-  let net_change = 0;
-
-  let buy_element = (
+  const profitStyle = isProfit ? theme.green : theme.red;
+  const buyComponent = (
     <>
-      <Text
-        style={[
-          styles.time,
-          {color: theme.textColor, backgroundColor: theme.foregroundColor},
-        ]}>
-        {moment(buy_order.utc_transaction_time).format('hh:mm:ss a - LL')}
+      <Text style={[styles.time, {color: theme.textColor, backgroundColor: theme.foregroundColor}]}>
+        {moment(buyOrder.utc_transaction_time).format('hh:mm:ss a - LL')}
       </Text>
-      <ListItem
-        containerStyle={[
-          styles.listItem,
-          {backgroundColor: theme.foregroundColor},
-        ]}
-        key={`${net_change}aa`}>
+      <ListItem containerStyle={[styles.listItem, {backgroundColor: theme.foregroundColor}]} key={`${net_change}aa`}>
         <ListItem.Content>
           <ListItem.Title style={{color: theme.textColor2}}>
-            {buy_order.asset} @ ${buy_order.average_price_of_asset}
+            {buyOrder.asset} @ ${buyOrder.average_price_of_asset}
           </ListItem.Title>
         </ListItem.Content>
         <ListItem.Title style={{color: theme.textColor2, paddingRight: 10}}>
-          {sell_order == null ? 'OPEN' : buy_order.side} $
-          {buy_order.purchase_amount_minus_commission.toFixed(2)}
+          {sellOrder == null ? 'OPEN' : buyOrder.side} ${buyOrder.purchase_amount_minus_commission.toFixed(2)}
         </ListItem.Title>
       </ListItem>
     </>
   );
 
-  if (!sell_order) {
-    return (
-      <View
-        style={[{backgroundColor: theme.foregroundColor}, styles.container]}>
-        {buy_element}
-      </View>
-    );
+  if (!sellOrder) {
+    return <View style={[{backgroundColor: theme.foregroundColor}, styles.container]}>{buyComponent}</View>;
   }
-
-  /** Profit Calculations **/
-
-  net_change =
-    sell_order.sale_amount_minus_commission -
-    buy_order.purchase_amount_minus_commission;
-
-  let isProfit = net_change > 0;
-
-  let percent_change = isProfit
-    ? (net_change / buy_order.purchase_amount_minus_commission) * 100
-    : (net_change / buy_order.purchase_amount_minus_commission) * 100;
-
-  let profit_style = isProfit ? theme.green : theme.red;
 
   return (
     <View style={[{backgroundColor: theme.foregroundColor}, styles.container]}>
       {/**Buy Order Element **/}
-      {buy_element}
+      {buyComponent}
 
       {/**Sell Order Element **/}
-      <Text
-        style={[
-          styles.time,
-          {color: theme.textColor, backgroundColor: theme.foregroundColor},
-        ]}>
-        {moment(sell_order.utc_transaction_time).format('hh:mm:ss a')}
+      <Text style={[styles.time, {color: theme.textColor, backgroundColor: theme.foregroundColor}]}>
+        {moment(sellOrder.utc_transaction_time).format('hh:mm:ss a')}
       </Text>
-      <ListItem
-        containerStyle={[
-          styles.listItem,
-          {backgroundColor: theme.foregroundColor},
-        ]}
-        key={0}>
+      <ListItem containerStyle={[styles.listItem, {backgroundColor: theme.foregroundColor}]} key={0}>
         <ListItem.Content>
           <ListItem.Title style={{color: theme.textColor2}}>
-            {sell_order.asset} @ ${sell_order.average_price_of_asset}
+            {sellOrder.asset} @ ${sellOrder.average_price_of_asset}
           </ListItem.Title>
-          <ListItem.Subtitle style={{color: profit_style}}>
-            P/L: {isProfit ? '▲' : '▼'}${net_change.toFixed(2)} (
-            {percent_change.toFixed(2)}
+          <ListItem.Subtitle style={{color: profitStyle}}>
+            P/L: {isProfit ? '▲' : '▼'}${net_change.toFixed(2)} ({percent_change.toFixed(2)}
             %)
           </ListItem.Subtitle>
         </ListItem.Content>
-        <ListItem.Title
-          style={[
-            {backgroundColor: profit_style, color: theme.foregroundColor},
-            styles.sell,
-          ]}>
-          {sell_order.side} $
-          {sell_order.sale_amount_minus_commission.toFixed(2)}
+        <ListItem.Title style={[{backgroundColor: profitStyle, color: theme.foregroundColor}, styles.sell]}>
+          {sellOrder.side} ${sellOrder.sale_amount_minus_commission.toFixed(2)}
         </ListItem.Title>
       </ListItem>
     </View>

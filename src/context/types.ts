@@ -1,0 +1,2 @@
+export const GET_TRADES = 'GET_TRADES';
+export const GET_CAPITAL_HISTORY = 'GET_CAPITAL_HISTORY';

@@ -1,47 +1,56 @@
+import React, {Dispatch, ReactNode, useContext} from 'react';
 import createDataContext from './createDataContext';
-import algo_api from '../api/algo';
+import {IAlgoState, IAlgoContext} from '../interfaces/AlgoInterfaces';
+import {GET_TRADES, GET_CAPITAL_HISTORY} from './types';
+import algo_api from '../api/api';
 
 type Action = {
   payload: any;
   type: string;
 };
 
-const algoReducer = (state: Object, action: Action) => {
+const defaultState: IAlgoState = {
+  trades: [],
+  capital_history: [],
+};
+
+const getTrades = async (dispatch: Dispatch<Action>) => {
+  try {
+    const response = await algo_api.get(`/trades`);
+    dispatch({type: GET_TRADES, payload: response.data});
+  } catch (e) {
+    dispatch({type: GET_TRADES, payload: []});
+  }
+};
+
+const getCapitalHistory = async (dispatch: Dispatch<Action>) => {
+  try {
+    const response = await algo_api.get(`/capital`);
+    dispatch({type: GET_CAPITAL_HISTORY, payload: response.data});
+  } catch (e) {
+    dispatch({type: GET_CAPITAL_HISTORY, payload: []});
+  }
+};
+
+const algoReducer = (state: IAlgoState, action: Action): IAlgoState => {
   switch (action.type) {
-    case 'get_trades':
+    case GET_TRADES:
       return {...state, trades: action.payload};
-    case 'get_capital_history':
+    case GET_CAPITAL_HISTORY:
       return {...state, capital_history: action.payload};
     default:
       return state;
   }
 };
 
-const getTrades = (dispatch: any) => {
-  return async () => {
-    try {
-      const response = await algo_api.get(`/trades`);
+interface IContextProps {
+  children: ReactNode;
+}
 
-      dispatch({type: 'get_trades', payload: response.data});
-    } catch (e) {
-      dispatch({type: 'get_trades', payload: []});
-    }
-  };
+export const {Provider, Context} = createDataContext(algoReducer, {getTrades, getCapitalHistory}, defaultState);
+
+export const AlgoProvider: React.FC<IContextProps> = ({children}) => {
+  return <Provider>{children}</Provider>;
 };
 
-const getCapitalHistory = (dispatch: any) => {
-  return async () => {
-    try {
-      const response = await algo_api.get(`/capital`);
-      dispatch({type: 'get_capital_history', payload: response.data});
-    } catch (e) {
-      dispatch({type: 'get_capital_history', payload: []});
-    }
-  };
-};
-
-export const {Provider, Context} = createDataContext(
-  algoReducer,
-  {getTrades, getCapitalHistory},
-  {trades: [], capital_history: []},
-);
+export const useAlgoContext = (): IAlgoContext => useContext<IAlgoContext>(Context);

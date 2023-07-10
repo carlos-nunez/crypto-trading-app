@@ -1,64 +1,50 @@
 import React from 'react';
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-} from 'react-native';
-import {useColorScheme} from 'react-native';
+import {StyleSheet, Text, View, TouchableOpacity, useColorScheme} from 'react-native';
 import {light, dark} from '../styles/defaultStyles';
 
-/**
-Sorts the Homescreen Chart and List by time
-@param setTime()
-@param time
-@param plStyle
-
-
-**/
-const TimePicker = ({setTime, time, plStyle}) => {
+interface ITimePicker {
+  time: string;
+  setTime: React.Dispatch<React.SetStateAction<string>>;
+  plStyle: string;
+}
+const TimePicker = ({time, setTime, plStyle}: ITimePicker) => {
   const colorScheme = useColorScheme();
-
-  let theme = colorScheme == 'light' ? light : dark;
-  let options = ['1D', '1W', '1M', '1Y', 'All'];
-
-  let eles = options.map((el) => (
-    <TouchableOpacity
-      style={{borderRadius: 10}}
-      onPress={() => {
-        setTime(el);
-      }}>
-      <Text
-        style={
-          time == el
-            ? [
-                styles.active,
-                {backgroundColor: plStyle, color: theme.foregroundColor},
-              ]
-            : [
-                styles.active,
-                {
-                  backgroundColor: theme.foregroundColor,
-                  color: theme.textColor2,
-                },
-              ]
-        }>
-        {el}
-      </Text>
-    </TouchableOpacity>
-  ));
+  const theme = colorScheme == 'light' ? light : dark;
+  const timeOptions = ['1D', '1W', '1M', '1Y', 'All'];
 
   return (
     <View
       style={[
         styles.container,
         {
-          borderBottomColor:
-            colorScheme == 'light' ? 'rgba(0,0,0,.2)' : 'rgba(255,255,255,.2)',
+          borderBottomColor: colorScheme == 'light' ? 'rgba(0,0,0,.2)' : 'rgba(255,255,255,.2)',
         },
-      ]}>
-      {eles}
+      ]}
+    >
+      {timeOptions.map((timeOption) => (
+        <TouchableOpacity
+          style={{borderRadius: 10}}
+          onPress={() => {
+            setTime(timeOption);
+          }}
+        >
+          <Text
+            style={
+              time == timeOption
+                ? [styles.active, {backgroundColor: plStyle, color: theme.foregroundColor}]
+                : [
+                    styles.active,
+                    {
+                      backgroundColor: theme.foregroundColor,
+                      color: theme.textColor2,
+                    },
+                  ]
+            }
+          >
+            {timeOption}
+          </Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 };
