@@ -7,12 +7,17 @@ import {light, dark} from '../styles/defaultStyles';
 const window = Dimensions.get('window');
 
 interface IChartLineProps {
-  value: {x: number; y: number; z: number};
-  position: {x: number; y: number};
+  value?: {x: number; y: number; z: number};
+  position?: {x: number; y: number};
 }
-const ChartLine = ({value, position}: IChartLineProps) => {
+const ChartLine: React.FC<IChartLineProps> = ({value, position}) => {
   const colorScheme = useColorScheme();
   const theme = colorScheme == 'light' ? light : dark;
+
+  if (!position || !value) {
+    return null;
+  }
+
   let leftOffset = position.x;
 
   if (position.x > window.width - 190) {

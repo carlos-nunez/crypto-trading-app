@@ -7,7 +7,7 @@ interface ITimePicker {
   setTime: React.Dispatch<React.SetStateAction<string>>;
   plStyle: string;
 }
-const TimePicker = ({time, setTime, plStyle}: ITimePicker) => {
+const TimePicker: React.FC<ITimePicker> = ({time, setTime, plStyle}) => {
   const colorScheme = useColorScheme();
   const theme = colorScheme == 'light' ? light : dark;
   const timeOptions = ['1D', '1W', '1M', '1Y', 'All'];

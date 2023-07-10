@@ -2,13 +2,12 @@ import React, {useState, useEffect} from 'react';
 import {View, Text, FlatList, StyleSheet, ActivityIndicator, SafeAreaView, useColorScheme} from 'react-native';
 import moment from 'moment';
 import {Chart, Line, Area, HorizontalAxis, VerticalAxis} from 'react-native-responsive-linechart';
-
 import Trade from '../components/Trade';
 import TimePicker from '../components/TimePicker';
 import ChartLine from '../components/ChartLine';
 import {light, dark} from '../styles/defaultStyles';
 import {useAlgoContext} from '../context/AlgoContext';
-import {getMaxMin} from '../utils/chart_funcs';
+import {getMaxMin} from '../utils/chartFuncs';
 import {ICapital, ITrade} from '../interfaces/AlgoInterfaces';
 
 const HomeScreen: React.FC = () => {
@@ -179,18 +178,5 @@ const styles = (theme) =>
       marginBottom: 0,
     },
   });
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//   },
-//   capital: {
-//     paddingTop: 0,
-//     fontSize: 34,
-//     paddingLeft: 15,
-//     color: 'white',
-//     fontWeight: '500',
-//   },
-// });
 
 export default HomeScreen;
